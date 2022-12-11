@@ -1,7 +1,7 @@
 <template>
     <div :class="[task.remender?'reminder':'','task']">
         <h3>{{task.text}}
-        <i class="fas fa-times"></i>
+        <i @click="$emit('delete-task',task.id)"  class="fas fa-times"></i>
     </h3>
         <p>
             {{task.day}}
