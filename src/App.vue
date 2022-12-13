@@ -3,7 +3,7 @@
 
     <div class="container">
       <Header title="Task Tracker"/>
-      <Tasks @delete-task="deleteTask" :tasks="tasks"/>
+      <Tasks @task-done="taskDone" @delete-task="deleteTask" :tasks="tasks"/>
     </div>
   
 
@@ -31,6 +31,10 @@ export default {
 
         this.tasks=this.tasks.filter((task)=>task.id!==id)
       }
+    },
+    taskDone(id){
+      this.tasks=this.tasks.map((task)=>task.id==id?{...task,remender:!task.remender}:task)
+
     }
   },
   created(){
