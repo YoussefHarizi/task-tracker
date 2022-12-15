@@ -2,7 +2,8 @@
 
 
     <div class="container">
-      <Header title="Task Tracker"/>
+      <Header title="Task Tracker" @clicked-btn="showtask=!showtask"/>
+      <AddTask @add-task="addTask" v-show="showtask"/>
       <Tasks @task-done="taskDone" @delete-task="deleteTask" :tasks="tasks"/>
     </div>
   
@@ -12,20 +13,25 @@
 <script>
 import Header from './components/Header.vue'
 import Tasks from './components/Tasks.vue'
+import AddTask from './components/AddTask.vue'
 export default {
   name:'App',
   components:{
     Header,
-    Tasks
+    Tasks,
+    AddTask
 
   },
   data(){
     return {
-
+      showtask:false,
       tasks:[]
     }
   },
   methods:{
+    addTask(task){
+      this.tasks=[...this.tasks,task]
+    },
     deleteTask(id){
       if(confirm('Are you sure to delete this task?')){
 
