@@ -2,7 +2,7 @@
 
 
     <div class="container">
-      <Header title="Task Tracker" @clicked-btn="showtask=!showtask"/>
+      <Header title="Task Tracker" @clicked-btn="toggleBtn" :closeadd="closeadd"/>
       <AddTask @add-task="addTask" v-show="showtask"/>
       <Tasks @task-done="taskDone" @delete-task="deleteTask" :tasks="tasks"/>
     </div>
@@ -25,45 +25,70 @@ export default {
   data(){
     return {
       showtask:false,
-      tasks:[]
+      tasks:[],
+      closeadd:false,
     }
   },
   methods:{
-    addTask(task){
-      this.tasks=[...this.tasks,task]
+    toggleBtn(){
+      this.showtask=!this.showtask
+      this.closeadd=!this.closeadd
+      
     },
-    deleteTask(id){
-      if(confirm('Are you sure to delete this task?')){
+    async addTask(task){
+      const res = await fetch('http://localhost:5000/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(task),
+      })
+      const data = await res.json()
 
-        this.tasks=this.tasks.filter((task)=>task.id!==id)
+      this.tasks=[...this.tasks,data]
+    },
+    async deleteTask(id){
+      if(confirm('Are you sure to delete this task?')){
+        const res = await fetch(`http://localhost:5000/tasks/${id}`, {
+          method: 'DELETE',
+        })
+        res.status === 200
+          ? (this.tasks = this.tasks.filter((task) => task.id !== id))
+          : alert('Error deleting task')
+
       }
     },
-    taskDone(id){
-      this.tasks=this.tasks.map((task)=>task.id==id?{...task,remender:!task.remender}:task)
+    async taskDone(id){
+      const taskToToggle = await this.fetchTask(id)
+      const updTask = { ...taskToToggle, remender: !taskToToggle.remender }
+      const res = await fetch(`http://localhost:5000/tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(updTask),
+      })
+      const data = await res.json()
+      this.tasks = this.tasks.map((task) =>
+        task.id === id ? { ...task, remender: data.remender } : task
+      )
+    },
 
-    }
+    async fetchTasks() {
+      const res = await fetch('http://localhost:5000/tasks')
+      const data = await res.json()
+      return data
+    },
+    async fetchTask(id) {
+      const res = await fetch(`http://localhost:5000/tasks/${id}`)
+      const data = await res.json()
+      return data
+    },
   },
-  created(){
-    this.tasks=[
-      {
-        id:1,
-        text:'First Task',
-        day:'March 1st at 2:30pm',
-        remender:true,
-      },
-      {
-        id:2,
-        text:'second Task',
-        day:'Juin 1st at 2:30pm',
-        remender:false,
-      },
-      {
-        id:3,
-        text:'Therd Task',
-        day:'March 1st at 2:30pm',
-        remender:true,
-      },
-      ]
+  
+ 
+  async created(){
+    this.tasks= await this.fetchTasks()
   }
 }
 </script>
